@@ -1,0 +1,25 @@
+{
+  "kind": "pulse-staff-roster",
+  "wave": 226,
+  "desk": "pulse",
+  "sold_now": false,
+  "won": false,
+  "aired": false,
+  "universal_mt": false,
+  "box_network": "off",
+  "install_into_pack_skills": false,
+  "fifth_lane": false,
+  "cron_pack_skill": false,
+  "parallel_cap": 4,
+  "work_kinds": {
+    "window_packet": ["producer", "research"],
+    "source_check": ["research", "skeptic"],
+    "social_queue": ["social", "skeptic"],
+    "creative_card": ["creative", "editor"],
+    "host_repair": ["technical"],
+    "culture_brief": ["culture"],
+    "bot_create": ["botwright", "chief"],
+    "publish_request": ["editor", "publisher"],
+    "skeptic_review": ["skeptic"]
+  }
+}

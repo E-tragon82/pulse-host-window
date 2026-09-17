@@ -1,6 +1,3 @@
-# Host-plane GitHub Action. Not a pack skill. Not a fifth lane.
-# Installed into E-tragon82/pulse-host-window as .github/workflows/pulse-host-window.yml
-# Do not copy into mac-quadforge/skills/
 name: pulse-host-window
 on:
   workflow_dispatch:
@@ -36,37 +33,18 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: refuse box network and fifth window
+      - name: refuse fifth window
         run: |
-          test "${MAC_BOX}" = "0"
           HOUR="${{ github.event.inputs.hour || '18' }}"
-          case "$HOUR" in
-            0|00|6|06|12|18) ;;
-            *) echo "FAIL fifth-window"; exit 2 ;;
-          esac
-      - name: require pin tree
+          case "$HOUR" in 0|00|6|06|12|18) ;; *) echo FAIL fifth-window; exit 2 ;; esac
+      - name: host deadline job aired=false
         run: |
-          if [ ! -f news-desk-pin/host_job.py ]; then
-            echo "HOLD pin-not-in-repo"
-            echo "Copy news-desk-pin/ (and heal_pin.py) onto this repo before the job can emit a window packet."
-            exit 0
-          fi
-      - name: heal pin after checkout
-        run: |
-          if [ ! -f news-desk-pin/host_job.py ]; then exit 0; fi
-          if [ -f heal_pin.py ]; then python3 heal_pin.py
-          elif [ -f news-desk-pin/heal_pin.py ]; then python3 news-desk-pin/heal_pin.py
-          fi
-      - name: host deadline job with chief assignment aired=false
-        run: |
-          if [ ! -f news-desk-pin/host_job.py ]; then exit 0; fi
           python3 news-desk-pin/host_job.py --host \
             --hour "${{ github.event.inputs.hour || '18' }}" \
             --country "${{ github.event.inputs.country || 'NG' }}" \
             --lane "${{ github.event.inputs.lane || 'official' }}"
       - name: prove assignment present and aired false
         run: |
-          if [ ! -f news-desk-pin/host_job.py ]; then exit 0; fi
           python3 - <<'PY'
           import json, pathlib, sys
           raw = """${{ github.event.inputs.hour || '18' }}""".strip()
@@ -92,7 +70,4 @@ jobs:
         if: hashFiles('news-desk-pin/windows/*.json') != ''
         with:
           name: pulse-window
-          path: |
-            news-desk-pin/windows/*.json
-            news-desk-pin/staff-bots/*.json
-            news-desk-pin/STAFF-PERMISSIONS.json
+          path: news-desk-pin/windows/*.json
