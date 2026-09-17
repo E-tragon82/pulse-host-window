@@ -1,0 +1,98 @@
+# Host-plane GitHub Action. Not a pack skill. Not a fifth lane.
+# Installed into E-tragon82/pulse-host-window as .github/workflows/pulse-host-window.yml
+# Do not copy into mac-quadforge/skills/
+name: pulse-host-window
+on:
+  workflow_dispatch:
+    inputs:
+      hour:
+        description: UTC window hour (00/06/12/18)
+        required: true
+        default: "18"
+      country:
+        description: ISO-3166 country shard
+        required: false
+        default: "NG"
+      lane:
+        description: official | social | country
+        required: false
+        default: "official"
+  schedule:
+    - cron: "0 0,6,12,18 * * *"
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: pulse-window
+  cancel-in-progress: false
+jobs:
+  window:
+    runs-on: ubuntu-latest
+    env:
+      MAC_BOX: "0"
+      BOX_NETWORK: "off"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: refuse box network and fifth window
+        run: |
+          test "${MAC_BOX}" = "0"
+          HOUR="${{ github.event.inputs.hour || '18' }}"
+          case "$HOUR" in
+            0|00|6|06|12|18) ;;
+            *) echo "FAIL fifth-window"; exit 2 ;;
+          esac
+      - name: require pin tree
+        run: |
+          if [ ! -f news-desk-pin/host_job.py ]; then
+            echo "HOLD pin-not-in-repo"
+            echo "Copy news-desk-pin/ (and heal_pin.py) onto this repo before the job can emit a window packet."
+            exit 0
+          fi
+      - name: heal pin after checkout
+        run: |
+          if [ ! -f news-desk-pin/host_job.py ]; then exit 0; fi
+          if [ -f heal_pin.py ]; then python3 heal_pin.py
+          elif [ -f news-desk-pin/heal_pin.py ]; then python3 news-desk-pin/heal_pin.py
+          fi
+      - name: host deadline job with chief assignment aired=false
+        run: |
+          if [ ! -f news-desk-pin/host_job.py ]; then exit 0; fi
+          python3 news-desk-pin/host_job.py --host \
+            --hour "${{ github.event.inputs.hour || '18' }}" \
+            --country "${{ github.event.inputs.country || 'NG' }}" \
+            --lane "${{ github.event.inputs.lane || 'official' }}"
+      - name: prove assignment present and aired false
+        run: |
+          if [ ! -f news-desk-pin/host_job.py ]; then exit 0; fi
+          python3 - <<'PY'
+          import json, pathlib, sys
+          raw = """${{ github.event.inputs.hour || '18' }}""".strip()
+          try:
+              h = int(raw)
+          except Exception:
+              h = 18
+          p = pathlib.Path(f"news-desk-pin/windows/window-{h:02d}.json")
+          if not p.is_file():
+              print("FAIL missing-packet"); sys.exit(2)
+          d = json.loads(p.read_text())
+          if d.get("aired") is True:
+              print("FAIL aired"); sys.exit(2)
+          if not (d.get("assignment") or d.get("assigned_to")):
+              print("FAIL no-chief-assignment"); sys.exit(2)
+          if d.get("lane") == "social":
+              roles = ((d.get("assigned_to") or {}).get("roles")) or []
+              if "skeptic" not in roles:
+                  print("FAIL social-missing-skeptic"); sys.exit(2)
+          print("PASS gha-packet aired=false assignment", d.get("assignment_id"))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: hashFiles('news-desk-pin/windows/*.json') != ''
+        with:
+          name: pulse-window
+          path: |
+            news-desk-pin/windows/*.json
+            news-desk-pin/staff-bots/*.json
+            news-desk-pin/STAFF-PERMISSIONS.json
